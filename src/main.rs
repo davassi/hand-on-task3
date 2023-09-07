@@ -1,10 +1,17 @@
 
 
-struct FilterCondition<T> {
-    condition : fn(T) -> bool,
+/// F defines the function, T the type
+struct FilterCondition<F, T> 
+where
+    F: Fn(T) -> bool,
+{
+    condition : F,
 }
 
-impl<T: Copy> FilterCondition<T> {
+impl<F, T: Copy> FilterCondition<F, T> 
+where
+    F: Fn(T) -> bool,
+{
 
     fn new(condition: fn(T) -> bool) -> Self {
         FilterCondition { condition }
@@ -15,17 +22,16 @@ impl<T: Copy> FilterCondition<T> {
     }   
 }
 
-fn custom_filter<T: Copy>(v : &Vec<T>, predicate: &FilterCondition<T>) -> Vec<T> {
+fn custom_filter<F : Fn(T,) -> bool, T: Copy>(v : &Vec<T>, predicate: &FilterCondition<F,T>) -> Vec<T> {
     v.iter().filter(|i| predicate.is_match(i)).cloned().collect()
 }
-
 
 fn main() -> () {
     
     let v : Vec<u32> = (0..20).collect();
-    let v : Vec<u32> = custom_filter(&v, &FilterCondition::new(|x: u32| { x<10 }));
+
+    let predicate = FilterCondition::new(|x: u32| { x<10 });
+    let v : Vec<u32> = custom_filter(&v, &predicate);
     
     println!("The filtered vec: {:?}",v);
-
-
 }
