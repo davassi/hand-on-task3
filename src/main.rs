@@ -1,31 +1,29 @@
 
 
-struct FilterCondition {
-    field : u32,
+struct FilterCondition<T> {
+    condition : fn(T) -> bool,
 }
 
-impl FilterCondition {
+impl<T: Copy> FilterCondition<T> {
 
-    fn is_match(&self, c: &u32) -> bool {
-        self.field > *c
+    fn new(condition: fn(T) -> bool) -> Self {
+        FilterCondition { condition }
+    }
+
+    fn is_match(&self, c: &T) -> bool {
+        (self.condition)(*c)
     }   
 }
 
-fn custom_filter(v : &Vec<u32>, predicate: &FilterCondition) -> Vec<u32> {
-    
+fn custom_filter<T: Copy>(v : &Vec<T>, predicate: &FilterCondition<T>) -> Vec<T> {
     v.iter().filter(|i| predicate.is_match(i)).cloned().collect()
 }
 
 
 fn main() -> () {
-
-    let condition  = |x| { x<10 };
-
-    condition(10);
     
     let v : Vec<u32> = (0..20).collect();
-
-    let v : Vec<u32> = custom_filter(&v, &FilterCondition { field : 10 } );
+    let v : Vec<u32> = custom_filter(&v, &FilterCondition::new(|x: u32| { x<10 }));
     
     println!("The filtered vec: {:?}",v);
 
